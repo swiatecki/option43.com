@@ -152,6 +152,7 @@
                 <li>IPv6 support</li>
                 <li>CatC Pnp String generation</li>
                 <li>Auto format output for different DHCP servers</li>
+                <li>Auto generate the output when the text box changes (maybe, depends how it works on mobile)</li>
             </ul>
         </div>
     </div>
@@ -194,6 +195,17 @@
             
             fomCheckbox.addEventListener('change', function() {
                 fomOptions.style.display = this.checked ? 'block' : 'none';
+                
+                // Always trigger generation if there are valid IP addresses, regardless of checkbox state
+                const ipAddresses = ipAddressInput.value.split(',').map(ip => ip.trim());
+                if (ipAddresses.some(ip => ip) && ipAddresses.every(isValidIpAddress)) {
+                    // Generate Option 43 hex value
+                    const hexValue = generateOption43(ipAddresses);
+                    
+                    // Display result
+                    hexValueDiv.textContent = hexValue;
+                    resultDiv.style.display = 'block';
+                }
             });
             
             function isValidIpAddress(ip) {
