@@ -113,6 +113,20 @@
             <div id="ipError" class="error">Please enter valid IP addresses</div>
         </div>
         
+        <div class="input-group">
+            <label>
+                <input type="checkbox" id="fomCheckbox"> Enable Fast Offline Migration (FOM)
+            </label>
+            <div id="fomOptions" style="margin-left: 20px; margin-top: 10px; display: none;">
+                <label>
+                    <input type="radio" name="fomMode" value="1" checked> Meraki Mode
+                </label>
+                <label style="margin-left: 10px;">
+                    <input type="radio" name="fomMode" value="2"> Catalyst Mode
+                </label>
+            </div>
+        </div>
+        
         <button id="generateBtn">Generate Option 43</button>
         
         <div id="result" class="result">
@@ -153,6 +167,14 @@
                 ipErrorDiv.style.display = 'none';
             });
             
+            // Add FOM checkbox handler
+            const fomCheckbox = document.getElementById('fomCheckbox');
+            const fomOptions = document.getElementById('fomOptions');
+            
+            fomCheckbox.addEventListener('change', function() {
+                fomOptions.style.display = this.checked ? 'block' : 'none';
+            });
+            
             function isValidIpAddress(ip) {
                 const ipPattern = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/;
                 const match = ip.match(ipPattern);
@@ -169,12 +191,16 @@
             }
             
             function generateOption43(ipAddresses) {
-                // Calculate total length (4 bytes per IP address)
-                const length = (ipAddresses.length * 4).toString(16).padStart(2, '0');
+                const fomEnabled = document.getElementById('fomCheckbox').checked;
                 
-                // Format for Cisco WLC Option 43:
-                // Type (f1) + Length (total bytes) + IP Addresses (in hex)
-                const type = 'f1';
+                // Calculate total length (4 bytes per IP address)
+                // If FOM is enabled, add 1 byte for the mode
+                const baseLength = ipAddresses.length * 4;
+                const totalLength = fomEnabled ? baseLength + 1 : baseLength;
+                const length = totalLength.toString(16).padStart(2, '0');
+                
+                // Type is f3 for FOM, f1 for normal
+                const type = fomEnabled ? 'f3' : 'f1';
                 
                 // Convert all IP addresses to hex
                 const hexIPs = ipAddresses.map(ip => {
@@ -185,8 +211,15 @@
                     }).join('');
                 }).join('');
                 
+                // Add mode byte if FOM is enabled
+                let modeByte = '';
+                if (fomEnabled) {
+                    const selectedMode = document.querySelector('input[name="fomMode"]:checked').value;
+                    modeByte = selectedMode === '1' ? '01' : '02';
+                }
+                
                 // Combine all parts
-                return type + length + hexIPs;
+                return type + length + hexIPs + modeByte;
             }
         });
     </script>
