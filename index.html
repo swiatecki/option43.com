@@ -150,7 +150,10 @@
         
         <div id="result" class="result">
             <div class="result-title">Option 43 Hex Value:</div>
-            <div id="hexValue" class="result-value"></div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <div id="hexValue" class="result-value" style="flex-grow: 1;"></div>
+                <button id="copyBtn" style="width: auto; padding: 8px 16px;">Copy</button>
+            </div>
         </div>
         
         <div style="margin-top: 30px; text-align: center; font-size: 12px; color: #888;">
@@ -181,6 +184,7 @@
             const resultDiv = document.getElementById('result');
             const hexValueDiv = document.getElementById('hexValue');
             const ipErrorDiv = document.getElementById('ipError');
+            const copyBtn = document.getElementById('copyBtn');
             
             generateBtn.addEventListener('click', function() {
                 const ipAddresses = ipAddressInput.value.split(',').map(ip => ip.trim());
@@ -271,6 +275,20 @@
                 // Combine all parts
                 return type + length + hexIPs + modeByte;
             }
+
+            // Add copy button handler
+            copyBtn.addEventListener('click', async function() {
+                try {
+                    await navigator.clipboard.writeText(hexValueDiv.textContent);
+                    const originalText = copyBtn.textContent;
+                    copyBtn.textContent = 'Copied!';
+                    setTimeout(() => {
+                        copyBtn.textContent = originalText;
+                    }, 2000);
+                } catch (err) {
+                    console.error('Failed to copy text: ', err);
+                }
+            });
         });
     </script>
 </body>
