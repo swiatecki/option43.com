@@ -152,6 +152,11 @@
                 <div id="hexValue" class="result-value" style="flex-grow: 1;"></div>
                 <button id="copyBtn" style="width: auto; padding: 8px 16px;">Copy</button>
             </div>
+            <div style="margin-top: 15px;">
+                <label style="display: inline-block; font-weight: normal; color: #555;">
+                    <input type="checkbox" id="infobloxCheckbox" style="width: auto; margin-right: 5px;"> Convert to Infoblox format
+                </label>
+            </div>
         </div>
         
         <div style="margin-top: 30px; text-align: center; font-size: 12px; color: #888;">
@@ -183,6 +188,7 @@
             const hexValueDiv = document.getElementById('hexValue');
             const ipErrorDiv = document.getElementById('ipError');
             const copyBtn = document.getElementById('copyBtn');
+            const infobloxCheckbox = document.getElementById('infobloxCheckbox');
             
             generateBtn.addEventListener('click', function() {
                 const ipAddresses = ipAddressInput.value.split(',').map(ip => ip.trim());
@@ -200,7 +206,7 @@
                 const hexValue = generateOption43(ipAddresses);
                 
                 // Display result
-                hexValueDiv.textContent = hexValue;
+                updateDisplay(hexValue);
                 resultDiv.style.display = 'block';
             });
             
@@ -222,10 +228,45 @@
                     const hexValue = generateOption43(ipAddresses);
                     
                     // Display result
-                    hexValueDiv.textContent = hexValue;
+                    updateDisplay(hexValue);
                     resultDiv.style.display = 'block';
                 }
             });
+            
+            // Add Infoblox checkbox handler
+            infobloxCheckbox.addEventListener('change', function() {
+                // Re-display current result with new format
+                if (hexValueDiv.textContent) {
+                    const originalHex = getOriginalHexValue();
+                    updateDisplay(originalHex);
+                }
+            });
+            
+            function updateDisplay(hexValue) {
+                if (infobloxCheckbox.checked) {
+                    hexValueDiv.textContent = convertToInfobloxFormat(hexValue);
+                } else {
+                    hexValueDiv.textContent = hexValue;
+                }
+            }
+            
+            function convertToInfobloxFormat(hexValue) {
+                // Convert hex string to Infoblox escaped format
+                // Each pair of hex characters becomes \xXX
+                const pairs = hexValue.match(/.{1,2}/g) || [];
+                return pairs.map(pair => '\\x' + pair.toLowerCase()).join('');
+            }
+            
+            function getOriginalHexValue() {
+                // Extract original hex value from current display
+                const currentValue = hexValueDiv.textContent;
+                // Check if current value is in Infoblox format (contains \x)
+                if (currentValue.includes('\\x')) {
+                    // Convert back from Infoblox format (remove \x prefixes)
+                    return currentValue.replace(/\\x/g, '').toLowerCase();
+                }
+                return currentValue;
+            }
             
             function isValidIpAddress(ip) {
                 const ipPattern = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/;
